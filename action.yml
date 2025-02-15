@@ -1,0 +1,22 @@
+name: "Send Discord Message"
+description: "Sends a message to a Discord channel via webhook."
+author: "Jake Cabrera"
+inputs:
+  webhook_url:
+    description: "The Discord webhook URL (can be set via ENV as DISCORD_WEBHOOK_URL)"
+    required: false
+  message:
+    description: "Message to send to Discord (supports env var expansion)"
+    required: true
+  username:
+    description: "The username to send the notification as. If unspecified, uses webhooks default username."
+    required: false
+  title:
+    description: "The title of the message to send."
+    required: false
+  color:
+    description: "The color of the embed border for the discord notification as a hexadecimal number."
+    required: false
+runs:
+  using: "docker"
+  image: "Dockerfile"
