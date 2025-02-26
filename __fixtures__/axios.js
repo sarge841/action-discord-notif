@@ -1,7 +1,7 @@
-import { jest } from '@jest/globals';
+import { jest } from '@jest/globals'
 
 const axios = {
-  post: jest.fn(() => Promise.resolve({ data: {} })),
-};
+  post: jest.fn(() => Promise.resolve({ data: {} }))
+}
 
-export default axios;
+export default axios

@@ -1,6 +1,7 @@
 # Send Discord Message Action
 
-This action sends a message to a Discord channel via a webhook using an embedded message format with a customizable border color.
+This action sends a message to a Discord channel via a webhook using an embedded
+message format with a customizable border color.
 
 ## Features
 
@@ -15,7 +16,8 @@ This action sends a message to a Discord channel via a webhook using an embedded
 
 ### `webhook_url`
 
-**Optional** - The Discord webhook URL. If not provided as an input, it must be set as an environment variable `DISCORD_WEBHOOK_URL`.
+**Optional** - The Discord webhook URL. If not provided as an input, it must be
+set as an environment variable `DISCORD_WEBHOOK_URL`.
 
 ### `content`
 
@@ -23,7 +25,8 @@ This action sends a message to a Discord channel via a webhook using an embedded
 
 ### `username`
 
-**Optional** - The username to send the message as. If not specified, the webhook's default username will be used.
+**Optional** - The username to send the message as. If not specified, the
+webhook's default username will be used.
 
 ### `avatar_url`
 
@@ -51,7 +54,8 @@ This action sends a message to a Discord channel via a webhook using an embedded
 
 ### `embed_color`
 
-**Optional** - The color of the embed border for the Discord notification, specified as a hexadecimal number (e.g., `FF5733`).
+**Optional** - The color of the embed border for the Discord notification,
+specified as a hexadecimal number (e.g., `FF5733`).
 
 ### `embed_author_name`
 
@@ -75,21 +79,25 @@ This action sends a message to a Discord channel via a webhook using an embedded
 
 ### `embed_fields`
 
-**Optional** - JSON array of fields for the embed. Each field should be an object with 'name', 'value', and 'inline'.
+**Optional** - JSON array of fields for the embed. Each field should be an
+object with 'name', 'value', and 'inline'.
 
 ### `show_payload`
 
-**Optional** - Set to 'true' to log the payload before sending. Default is `false`.
+**Optional** - Set to 'true' to log the payload before sending. Default is
+`false`.
 
 ## Environment Variables
 
 ### `DISCORD_WEBHOOK_URL`
 
-If `webhook_url` is not provided as an input, this environment variable must be set with the Discord webhook URL.
+If `webhook_url` is not provided as an input, this environment variable must be
+set with the Discord webhook URL.
 
 ## How the Message is Sent
 
-The message can be sent as either a plain text message or as a **Discord Embed**. 
+The message can be sent as either a plain text message or as a **Discord
+Embed**.
 
 ## Example Usage
 
@@ -110,7 +118,7 @@ jobs:
         uses: jakecabrera/action-discord-notif@v1
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          content: "A new commit by ${{ github.actor }}!"
+          content: 'A new commit by ${{ github.actor }}!'
 ```
 
 ### Sending a Notification Using an Embed
@@ -130,9 +138,9 @@ jobs:
         uses: jakecabrera/action-discord-notif@v1
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          embed_title: "Notification"
-          embed_description: "A new commit by ${{ github.actor }}!"
-          embed_color: "3498DB"
+          embed_title: 'Notification'
+          embed_description: 'A new commit by ${{ github.actor }}!'
+          embed_color: '3498DB'
 ```
 
 ### Using an Environment Variable for the Webhook
@@ -153,19 +161,22 @@ jobs:
       - name: Send Discord Message
         uses: jakecabrera/action-discord-notif@v1
         with:
-          content: "Deployment by ${{ github.actor }} completed successfully!"
-          embed_title: "Success"
-          embed_color: "2ECC71"
+          content: 'Deployment by ${{ github.actor }} completed successfully!'
+          embed_title: 'Success'
+          embed_color: '2ECC71'
 ```
 
 ## Testing
 
-Run the action locally (will need an environment variable file structured similar to `.env.example`):
+Run the action locally (will need an environment variable file structured
+similar to `.env.example`):
+
 ```
 npx local-action . src/main.js .env
 ```
 
 Run tests:
+
 ```
 npm run test
 ```
