@@ -6,7 +6,7 @@
  * so that the actual '@actions/core' module is not imported.
  */
 import { it, jest } from '@jest/globals';
-import { axios } from '../__fixtures__/axios.js';
+import axios from '../__fixtures__/axios.js';
 import * as core from '../__fixtures__/core.js';
 
 jest.unstable_mockModule('axios', () => ({ default: axios }));
@@ -87,6 +87,28 @@ describe('run', () => {
 
     expect(axios.post).toHaveBeenCalledWith('https://discord.com/api/webhooks/test', {
       content: 'Test content'
+    });
+  });
+
+  it('should expand environment variables in content', async () => {
+    process.env.TEST_VAR = 'test value';
+    const mockGetInput = (input) => {
+      switch (input) {
+        case 'webhook_url':
+          return 'https://discord.com/api/webhooks/test';
+        case 'content':
+          return 'Test content with $TEST_VAR';
+        default:
+          return '';
+      }
+    };
+    core.getInput.mockImplementation(mockGetInput);
+    axios.post.mockResolvedValue({ status: 204 });
+
+    await run();
+
+    expect(axios.post).toHaveBeenCalledWith('https://discord.com/api/webhooks/test', {
+      content: 'Test content with test value'
     });
   });
 

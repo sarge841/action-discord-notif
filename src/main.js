@@ -12,7 +12,7 @@ const EMBED_LIMITS = {
 };
 
 function expandEnvVariables(text) {
-  return text.replace(/\$\{(\w+)\}/g, (_, v) => process.env[v] || "");
+  return text.replace(/\$\{(\w+)\}|\$(\w+)/g, (_, v1, v2) => process.env[v1 || v2] || "");
 }
 
 function validateEmbed(embed) {
