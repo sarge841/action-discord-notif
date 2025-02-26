@@ -62,7 +62,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: Send Discord Message
         uses: jakecabrera/action-discord-notif@v1
         with:
@@ -86,7 +86,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: Send Discord Message
         uses: jakecabrera/action-discord-notif@v1
         with:
