@@ -117,7 +117,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Send Discord Message
-        uses: jakecabrera/action-discord-notif@v1
+        uses: jakecabrera/action-discord-notif@v2
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           content: 'A new commit by ${{ github.actor }}!'
@@ -137,7 +137,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Send Discord Message
-        uses: jakecabrera/action-discord-notif@v1
+        uses: jakecabrera/action-discord-notif@v2
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           embed_title: 'Notification'
@@ -161,7 +161,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Send Discord Message
-        uses: jakecabrera/action-discord-notif@v1
+        uses: jakecabrera/action-discord-notif@v2
         with:
           content: 'Deployment by ${{ github.actor }} completed successfully!'
           embed_title: 'Success'
