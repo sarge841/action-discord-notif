@@ -5,27 +5,27 @@ import require$$2 from 'http';
 import require$$4 from 'https';
 import require$$0$1 from 'url';
 import require$$1$2 from 'fs';
+import crypto from 'crypto';
 import require$$0$3 from 'assert';
 import require$$1$3 from 'tty';
 import require$$0$2 from 'os';
 import zlib from 'zlib';
 import require$$4$1, { EventEmitter } from 'events';
-import require$$0$4 from 'crypto';
-import require$$0$5 from 'net';
+import require$$0$4 from 'net';
 import require$$1$4 from 'tls';
 import require$$7 from 'buffer';
 import require$$8 from 'querystring';
 import require$$14 from 'stream/web';
-import require$$0$7 from 'node:stream';
+import require$$0$6 from 'node:stream';
 import require$$1$5 from 'node:util';
-import require$$0$6 from 'node:events';
-import require$$0$8 from 'worker_threads';
+import require$$0$5 from 'node:events';
+import require$$0$7 from 'worker_threads';
 import require$$2$1 from 'perf_hooks';
 import require$$5 from 'util/types';
 import require$$4$2 from 'async_hooks';
 import require$$1$6 from 'console';
 import require$$6 from 'string_decoder';
-import require$$0$9 from 'diagnostics_channel';
+import require$$0$8 from 'diagnostics_channel';
 import require$$2$2 from 'child_process';
 import require$$6$1 from 'timers';
 
@@ -635,26 +635,6 @@ const toFiniteNumber = (value, defaultValue) => {
   return value != null && Number.isFinite(value = +value) ? value : defaultValue;
 };
 
-const ALPHA = 'abcdefghijklmnopqrstuvwxyz';
-
-const DIGIT = '0123456789';
-
-const ALPHABET = {
-  DIGIT,
-  ALPHA,
-  ALPHA_DIGIT: ALPHA + ALPHA.toUpperCase() + DIGIT
-};
-
-const generateString = (size = 16, alphabet = ALPHABET.ALPHA_DIGIT) => {
-  let str = '';
-  const {length} = alphabet;
-  while (size--) {
-    str += alphabet[Math.random() * length|0];
-  }
-
-  return str;
-};
-
 /**
  * If the thing is a FormData object, return true, otherwise return false.
  *
@@ -782,8 +762,6 @@ var utils$3 = {
   findKey,
   global: _global,
   isContextDefined,
-  ALPHABET,
-  generateString,
   isSpecCompliantForm,
   toJSONObject,
   isAsyncFn,
@@ -14626,6 +14604,29 @@ var transitionalDefaults = {
 
 var URLSearchParams$1 = require$$0$1.URLSearchParams;
 
+const ALPHA = 'abcdefghijklmnopqrstuvwxyz';
+
+const DIGIT = '0123456789';
+
+const ALPHABET = {
+  DIGIT,
+  ALPHA,
+  ALPHA_DIGIT: ALPHA + ALPHA.toUpperCase() + DIGIT
+};
+
+const generateString = (size = 16, alphabet = ALPHABET.ALPHA_DIGIT) => {
+  let str = '';
+  const {length} = alphabet;
+  const randomValues = new Uint32Array(size);
+  crypto.randomFillSync(randomValues);
+  for (let i = 0; i < size; i++) {
+    str += alphabet[randomValues[i] % length];
+  }
+
+  return str;
+};
+
+
 var platform$2 = {
   isNode: true,
   classes: {
@@ -14633,6 +14634,8 @@ var platform$2 = {
     FormData: FormData$1,
     Blob: typeof Blob !== 'undefined' && Blob || null
   },
+  ALPHABET,
+  generateString,
   protocols: [ 'http', 'https', 'file', 'data' ]
 };
 
@@ -15403,8 +15406,9 @@ function combineURLs(baseURL, relativeURL) {
  *
  * @returns {string} The combined full path
  */
-function buildFullPath(baseURL, requestedURL) {
-  if (baseURL && !isAbsoluteURL(requestedURL)) {
+function buildFullPath(baseURL, requestedURL, allowAbsoluteUrls) {
+  let isRelativeUrl = !isAbsoluteURL(requestedURL);
+  if (baseURL && isRelativeUrl || allowAbsoluteUrls == false) {
     return combineURLs(baseURL, requestedURL);
   }
   return requestedURL;
@@ -17462,7 +17466,7 @@ function requireFollowRedirects () {
 var followRedirectsExports = requireFollowRedirects();
 var followRedirects = /*@__PURE__*/getDefaultExportFromCjs(followRedirectsExports);
 
-const VERSION$1 = "1.7.9";
+const VERSION$1 = "1.8.1";
 
 function parseProtocol(url) {
   const match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url);
@@ -17668,7 +17672,7 @@ const readBlob = async function* (blob) {
   }
 };
 
-const BOUNDARY_ALPHABET = utils$3.ALPHABET.ALPHA_DIGIT + '-_';
+const BOUNDARY_ALPHABET = platform$1.ALPHABET.ALPHA_DIGIT + '-_';
 
 const textEncoder = typeof TextEncoder === 'function' ? new TextEncoder() : new require$$1.TextEncoder();
 
@@ -17728,7 +17732,7 @@ const formDataToStream = (form, headersHandler, options) => {
   const {
     tag = 'form-data-boundary',
     size = 25,
-    boundary = tag + '-' + utils$3.generateString(size, BOUNDARY_ALPHABET)
+    boundary = tag + '-' + platform$1.generateString(size, BOUNDARY_ALPHABET)
   } = options || {};
 
   if(!utils$3.isFormData(form)) {
@@ -19676,6 +19680,13 @@ let Axios$1 = class Axios {
       }
     }
 
+    // Set config.allowAbsoluteUrls
+    if (config.allowAbsoluteUrls !== undefined) ; else if (this.defaults.allowAbsoluteUrls !== undefined) {
+      config.allowAbsoluteUrls = this.defaults.allowAbsoluteUrls;
+    } else {
+      config.allowAbsoluteUrls = true;
+    }
+
     validator.assertOptions(config, {
       baseUrl: validators.spelling('baseURL'),
       withXsrfToken: validators.spelling('withXSRFToken')
@@ -19771,7 +19782,7 @@ let Axios$1 = class Axios {
 
   getUri(config) {
     config = mergeConfig$1(this.defaults, config);
-    const fullPath = buildFullPath(config.baseURL, config.url);
+    const fullPath = buildFullPath(config.baseURL, config.url, config.allowAbsoluteUrls);
     return buildURL(fullPath, config.params, config.paramsSerializer);
   }
 };
@@ -20327,7 +20338,7 @@ function requireFileCommand () {
 	fileCommand.prepareKeyValueMessage = fileCommand.issueFileCommand = void 0;
 	// We use any as a valid input type
 	/* eslint-disable @typescript-eslint/no-explicit-any */
-	const crypto = __importStar(require$$0$4);
+	const crypto$1 = __importStar(crypto);
 	const fs = __importStar(require$$1$2);
 	const os = __importStar(require$$0$2);
 	const utils_1 = requireUtils$1();
@@ -20345,7 +20356,7 @@ function requireFileCommand () {
 	}
 	fileCommand.issueFileCommand = issueFileCommand;
 	function prepareKeyValueMessage(key, value) {
-	    const delimiter = `ghadelimiter_${crypto.randomUUID()}`;
+	    const delimiter = `ghadelimiter_${crypto$1.randomUUID()}`;
 	    const convertedValue = (0, utils_1.toCommandValue)(value);
 	    // These should realistically never happen, but just in case someone finds a
 	    // way to exploit uuid generation let's not allow keys or values that contain
@@ -21200,7 +21211,7 @@ function requireUtil$6 () {
 	const { kDestroyed, kBodyUsed } = requireSymbols$4();
 	const { IncomingMessage } = require$$2;
 	const stream$1 = stream;
-	const net = require$$0$5;
+	const net = require$$0$4;
 	const { InvalidArgumentError } = requireErrors();
 	const { Blob } = require$$7;
 	const nodeUtil = require$$1;
@@ -21859,7 +21870,7 @@ function requireSbmh () {
 	 * Based heavily on the Streaming Boyer-Moore-Horspool C++ implementation
 	 * by Hongli Lai at: https://github.com/FooBarWidget/boyer-moore-horspool
 	 */
-	const EventEmitter = require$$0$6.EventEmitter;
+	const EventEmitter = require$$0$5.EventEmitter;
 	const inherits = require$$1$5.inherits;
 
 	function SBMH (needle) {
@@ -22070,7 +22081,7 @@ function requirePartStream () {
 	hasRequiredPartStream = 1;
 
 	const inherits = require$$1$5.inherits;
-	const ReadableStream = require$$0$7.Readable;
+	const ReadableStream = require$$0$6.Readable;
 
 	function PartStream (opts) {
 	  ReadableStream.call(this, opts);
@@ -22114,7 +22125,7 @@ function requireHeaderParser () {
 	if (hasRequiredHeaderParser) return HeaderParser_1;
 	hasRequiredHeaderParser = 1;
 
-	const EventEmitter = require$$0$6.EventEmitter;
+	const EventEmitter = require$$0$5.EventEmitter;
 	const inherits = require$$1$5.inherits;
 	const getLimit = requireGetLimit();
 
@@ -22222,7 +22233,7 @@ function requireDicer () {
 	if (hasRequiredDicer) return Dicer_1;
 	hasRequiredDicer = 1;
 
-	const WritableStream = require$$0$7.Writable;
+	const WritableStream = require$$0$6.Writable;
 	const inherits = require$$1$5.inherits;
 
 	const StreamSearch = requireSbmh();
@@ -22799,7 +22810,7 @@ function requireMultipart () {
 	//  * support limits.fieldNameSize
 	//     -- this will require modifications to utils.parseParams
 
-	const { Readable } = require$$0$7;
+	const { Readable } = require$$0$6;
 	const { inherits } = require$$1$5;
 
 	const Dicer = requireDicer();
@@ -23365,7 +23376,7 @@ function requireMain () {
 	if (hasRequiredMain) return main.exports;
 	hasRequiredMain = 1;
 
-	const WritableStream = require$$0$7.Writable;
+	const WritableStream = require$$0$6.Writable;
 	const { inherits } = require$$1$5;
 	const Dicer = requireDicer();
 
@@ -23458,7 +23469,7 @@ function requireConstants$3 () {
 	if (hasRequiredConstants$3) return constants$3;
 	hasRequiredConstants$3 = 1;
 
-	const { MessageChannel, receiveMessageOnPort } = require$$0$8;
+	const { MessageChannel, receiveMessageOnPort } = require$$0$7;
 
 	const corsSafeListedMethods = ['GET', 'HEAD', 'POST'];
 	const corsSafeListedMethodsSet = new Set(corsSafeListedMethods);
@@ -28104,7 +28115,7 @@ function requireConnect () {
 	if (hasRequiredConnect) return connect;
 	hasRequiredConnect = 1;
 
-	const net = require$$0$5;
+	const net = require$$0$4;
 	const assert = require$$0$3;
 	const util = requireUtil$6();
 	const { InvalidArgumentError, ConnectTimeoutError } = requireErrors();
@@ -28871,7 +28882,7 @@ function requireClient () {
 	/* global WebAssembly */
 
 	const assert = require$$0$3;
-	const net = require$$0$5;
+	const net = require$$0$4;
 	const http = require$$2;
 	const { pipeline } = stream;
 	const util = requireUtil$6();
@@ -42391,7 +42402,7 @@ function requireEvents () {
 
 	const { webidl } = requireWebidl();
 	const { kEnumerableProperty } = requireUtil$6();
-	const { MessagePort } = require$$0$8;
+	const { MessagePort } = require$$0$7;
 
 	/**
 	 * @see https://html.spec.whatwg.org/multipage/comms.html#messageevent
@@ -42908,7 +42919,7 @@ function requireConnection () {
 	if (hasRequiredConnection) return connection;
 	hasRequiredConnection = 1;
 
-	const diagnosticsChannel = require$$0$9;
+	const diagnosticsChannel = require$$0$8;
 	const { uid, states } = requireConstants();
 	const {
 	  kReadyState,
@@ -43289,7 +43300,7 @@ function requireReceiver () {
 	hasRequiredReceiver = 1;
 
 	const { Writable } = stream;
-	const diagnosticsChannel = require$$0$9;
+	const diagnosticsChannel = require$$0$8;
 	const { parserStates, opcodes, states, emptyBuffer } = requireConstants();
 	const { kReadyState, kSentClose, kResponse, kReceivedClose } = requireSymbols();
 	const { isValidStatusCode, failWebsocketConnection, websocketMessageReceived } = requireUtil();
