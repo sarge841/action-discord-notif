@@ -59,4 +59,4 @@ jobs:
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           content: 'Test message from GitHub Actions'
-          show_payload: 'true'          
+          show_payload: 'true'
