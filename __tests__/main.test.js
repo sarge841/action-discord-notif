@@ -31,7 +31,7 @@ describe('run', () => {
 
     await run()
     expect(core.setFailed).toHaveBeenCalledWith(
-      expect.stringContaining('❌ No webhook URL provided!')
+      expect.stringContaining('No webhook URL provided!')
     )
   })
 
@@ -52,7 +52,7 @@ describe('run', () => {
 
     await run()
     expect(core.setFailed).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Both content and embed description provided!')
+      expect.stringContaining('Both content and embed description provided!')
     )
   })
 
@@ -71,7 +71,35 @@ describe('run', () => {
 
     await run()
     expect(core.setFailed).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Content exceeds 2000 characters!')
+      expect.stringContaining('Content exceeds 2000 characters!')
+    )
+  })
+
+  // Test to build repo url from env variables
+  it('should build repo URL from environment variables', async () => {
+    process.env.GITHUB_SERVER_URL = 'https://github.com'
+    process.env.GITHUB_REPOSITORY = 'owner/repo'
+    process.env.GITHUB_REF_NAME = 'branch'
+    const mockGetInput = (input) => {
+      switch (input) {
+        case 'webhook_url':
+          return 'https://discord.com/api/webhooks/test'
+        case 'content':
+          return 'Test content'
+        default:
+          return ''
+      }
+    }
+    core.getInput.mockImplementation(mockGetInput)
+    axios.post.mockResolvedValue({ status: 204 })
+
+    await run()
+
+    expect(axios.post).toHaveBeenCalledWith(
+      'https://discord.com/api/webhooks/test',
+      {
+        content: 'Test content'
+      }
     )
   })
 
@@ -96,6 +124,27 @@ describe('run', () => {
       {
         content: 'Test content'
       }
+    )
+  })
+
+  it('should fail with a non 204 return code', async () => {
+    const mockGetInput = (input) => {
+      switch (input) {
+        case 'webhook_url':
+          return 'https://discord.com/api/webhooks/test'
+        case 'content':
+          return 'Test content'
+        default:
+          return ''
+      }
+    }
+    core.getInput.mockImplementation(mockGetInput)
+    axios.post.mockResolvedValue({ status: 400 })
+
+    await run()
+
+    expect(core.setFailed).toHaveBeenCalledWith(
+      expect.stringContaining('Failed to send message.')
     )
   })
 
@@ -196,9 +245,7 @@ describe('run', () => {
 
     await run()
 
-    expect(core.info).toHaveBeenCalledWith(
-      expect.stringContaining('📢 Payload:')
-    )
+    expect(core.info).toHaveBeenCalledWith(expect.stringContaining('Payload: '))
   })
 
   it('should exit with error if embed title exceeds 256 characters', async () => {
@@ -236,6 +283,25 @@ describe('run', () => {
     await run()
     expect(core.setFailed).toHaveBeenCalledWith(
       expect.stringContaining('Embed description exceeds')
+    )
+  })
+
+  it('should exit with error if embed fields are not proper JSON', async () => {
+    const mockGetInput = (input) => {
+      switch (input) {
+        case 'webhook_url':
+          return 'https://discord.com/api/webhooks/test'
+        case 'embed_fields':
+          return 'Not a JSON string'
+        default:
+          return ''
+      }
+    }
+    core.getInput.mockImplementation(mockGetInput)
+
+    await run()
+    expect(core.setFailed).toHaveBeenCalledWith(
+      expect.stringContaining('Invalid JSON for embed fields')
     )
   })
 

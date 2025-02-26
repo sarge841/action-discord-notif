@@ -47352,6 +47352,7 @@ function requireCore () {
 
 var coreExports = requireCore();
 
+// Embed limits for Discord messages
 const EMBED_LIMITS = {
   title: 256,
   description: 4096,
@@ -47362,6 +47363,8 @@ const EMBED_LIMITS = {
   authorName: 256
 };
 
+// Function to expand environment variables in a given text
+// This works for both ${VAR} and $VAR formats
 function expandEnvVariables(text) {
   return text.replace(
     /\$\{(\w+)\}|\$(\w+)/g,
@@ -47369,6 +47372,7 @@ function expandEnvVariables(text) {
   )
 }
 
+// Function to validate the embed object against Discord's limits
 function validateEmbed(embed) {
   if (embed.title && embed.title.length > EMBED_LIMITS.title) {
     throw new Error(`Embed title exceeds ${EMBED_LIMITS.title} characters.`)
@@ -47418,33 +47422,28 @@ function validateEmbed(embed) {
   }
 }
 
+// Function to send a message to Discord via webhook
 async function sendDiscordMessage(webhookUrl, payload) {
-  if (!webhookUrl) {
-    coreExports.setFailed(
-      '❌ Missing webhook URL. Set it via INPUT_WEBHOOK_URL or DISCORD_WEBHOOK_URL env.'
-    );
-    return
-  }
-
-  coreExports.info('🚀 Sending message to Discord...');
+  coreExports.info('Sending message to Discord...');
 
   try {
     const response = await axios.post(webhookUrl, payload);
 
     if (response.status === 204) {
-      coreExports.info('✅ Message sent successfully!');
+      coreExports.info('Message sent successfully!');
     } else {
       coreExports.setFailed(
-        `❌ Failed to send message. HTTP ${response.status}: ${response.statusText}`
+        `Failed to send message. HTTP ${response.status}: ${response.statusText}`
       );
     }
   } catch (error) {
-    coreExports.setFailed(`❌ Request failed: ${error}`);
+    coreExports.setFailed(`Request failed: ${error}`);
   }
 }
 
+// Main function to run the action
 async function run() {
-  coreExports.info('🔍 Checking environment variables...');
+  coreExports.info('Checking environment variables...');
 
   // Retrieve inputs
   const webhookUrl =
@@ -47473,46 +47472,54 @@ async function run() {
     `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/src/branch/${process.env.GITHUB_REF_NAME}`;
   }
 
+  // Check if webhook URL is provided
   if (!webhookUrl) {
     coreExports.setFailed(
-      '❌ No webhook URL provided! Set the `DISCORD_WEBHOOK_URL` environment variable or provide the `webhook_url` input.'
+      'No webhook URL provided! Set the `DISCORD_WEBHOOK_URL` environment variable or provide the `webhook_url` input.'
     );
     return
   }
 
+  // Check if both content and embed description are provided
   if (content && embedDescription) {
     coreExports.setFailed(
-      '❌ Both content and embed description provided! Ensure only one of `content` or `embed_description` is set. Exiting.'
+      'Both content and embed description provided! Ensure only one of `content` or `embed_description` is set. Exiting.'
     );
     return
   }
 
+  // Check if content exceeds 2000 characters
   if (content && content.length > 2000) {
     coreExports.setFailed(
-      '❌ Content exceeds 2000 characters! Ensure the `content` input is within the limit. Exiting.'
+      'Content exceeds 2000 characters! Ensure the `content` input is within the limit. Exiting.'
     );
     return
   }
 
-  // Create the payload
+  // Create the payload object
   const payload = {};
 
+  // Add content to payload if provided
   if (content) {
     payload.content = expandEnvVariables(content);
   }
 
+  // Add username to payload if provided
   if (username) {
     payload.username = username;
   }
 
+  // Add avatar URL to payload if provided
   if (avatarUrl) {
     payload.avatar_url = avatarUrl;
   }
 
+  // Add TTS to payload if enabled
   if (tts) {
     payload.tts = tts;
   }
 
+  // Add embed to payload if no content and embed properties are provided
   if (
     !content &&
     (embedTitle ||
@@ -47577,7 +47584,7 @@ async function run() {
         embed.fields = JSON.parse(embedFields);
       } catch (error) {
         coreExports.setFailed(
-          '❌ Invalid JSON for embed fields. Ensure the `embed_fields` input is a valid JSON array.'
+          'Invalid JSON for embed fields. Ensure the `embed_fields` input is a valid JSON array.'
         );
         return
       }
@@ -47592,10 +47599,12 @@ async function run() {
     payload.embeds = [embed];
   }
 
+  // Log the payload if show_payload is true
   if (showPayload) {
-    coreExports.info(`📢 Payload: ${JSON.stringify(payload)}`);
+    coreExports.info(`Payload: ${JSON.stringify(payload)}`);
   }
 
+  // Send the message to Discord
   await sendDiscordMessage(webhookUrl, payload);
 }
 
