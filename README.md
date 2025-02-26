@@ -95,6 +95,18 @@ jobs:
           color: "2ECC71"
 ```
 
+## Testing
+
+Run the action locally (will need an example file structured similar to `.env.example`):
+```
+npx local-action . src/main.js .env
+```
+
+Run tests:
+```
+npm run test
+```
+
 ## License
 
 This action is open-source and free to use under the MIT license.
