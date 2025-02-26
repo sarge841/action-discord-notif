@@ -1,5 +1,7 @@
 # Send Discord Message Action
 
+![Coverage](./badges/coverage.svg)[![Continuous Integration](https://github.com/sarge841/action-discord-notif/actions/workflows/ci.yml/badge.svg)](https://github.com/sarge841/action-discord-notif/actions/workflows/ci.yml)[![CodeQL](https://github.com/sarge841/action-discord-notif/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/sarge841/action-discord-notif/actions/workflows/codeql-analysis.yml)[![Check Transpiled JavaScript](https://github.com/sarge841/action-discord-notif/actions/workflows/check-dist.yml/badge.svg)](https://github.com/sarge841/action-discord-notif/actions/workflows/check-dist.yml)
+
 This action sends a message to a Discord channel via a webhook using an embedded
 message format with a customizable border color.
 
