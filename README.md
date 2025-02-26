@@ -135,7 +135,7 @@ jobs:
           embed_color: "3498DB"
 ```
 
-### Using an Environment Variable in the Workflow
+### Using an Environment Variable for the Webhook
 
 ```yaml
 name: Send Discord Notification
