@@ -1,0 +1,26 @@
+{
+  "name": "action-discord-notif",
+  "version": "1.0.0",
+  "description": "This action sends a message to a Discord channel via a webhook using an embedded message format with a customizable border color.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sarge841/action-discord-notif.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sarge841/action-discord-notif/issues"
+  },
+  "homepage": "https://github.com/sarge841/action-discord-notif#readme",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.0",
+    "@github/local-action": "^2.6.3",
+    "axios": "^1.7.9"
+  }
+}
