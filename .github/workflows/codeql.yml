@@ -20,6 +20,7 @@ on:
       - main
   schedule:
     - cron: '24 5 * * 6'
+  workflow_dispatch:
 
 permissions:
   actions: read
